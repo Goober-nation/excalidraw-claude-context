@@ -11,11 +11,18 @@ run `scripts/extract_region.py` on it.
 
 ## Workflow
 
+0. **(Only if given a live room link, not a file)** try
+   `scripts/fetch_room.sh "<excalidraw.com/#room=...,... url>"` to fetch
+   and decrypt the room's current scene into a standard `.excalidraw`
+   file, best-effort (see Current state below). **If it fails for any
+   reason, stop and ask the user for an exported `.excalidraw` file
+   instead** — do not retry, do not attempt another decryption method.
 1. **Run the analysis script** (`scripts/extract_region.py`) against a
-   local `.excalidraw` export. It finds every rectangle matching a given
-   color, then pulls every element whose center falls inside that
-   rectangle — shapes, their labels, arrows (including ones that cross
-   the boundary, marked as external), and floating text.
+   local `.excalidraw` file (an export, or `fetch_room.sh`'s output). It
+   finds every rectangle matching a given color, then pulls every element
+   whose center falls inside that rectangle — shapes, their labels,
+   arrows (including ones that cross the boundary, marked as external),
+   and floating text.
 2. **State understanding decisions before any summary.** The script
    applies two geometric heuristics and reports them as evidence, not
    fact: an unlabeled rectangle is classified as a likely
@@ -36,16 +43,23 @@ screenshot themselves.
 
 ## Current state
 
-- Single script, Python standard library only (`json`, `math`, `argparse`,
-  `sys`) — no installs required.
+- `extract_region.py`: Python standard library only (`json`, `math`,
+  `argparse`, `sys`) — no installs required.
 - Handles multiple rectangles matching the same color: all are processed,
   grouped separately, with an explicit warning rather than silently
   picking one.
-- Does not read live Excalidraw collaboration links — those are
-  end-to-end encrypted and only decryptable client-side in a browser.
-  Requires a local `.excalidraw` JSON export.
 - Verified against a real multi-region board, including the multi-match
   warning path and both unlabeled-shape classifications.
+- `fetch_room.sh`: **best-effort** support for live
+  `excalidraw.com/#room=...` links. Excalidraw's room data is end-to-end
+  encrypted with a key that lives only in the URL fragment; this script
+  fetches the encrypted scene from Excalidraw's own (undocumented,
+  unofficial) storage backend and decrypts it locally with that key,
+  using Node's built-in `crypto` module (no `npm install`, no packages —
+  only requires `node` to be present). Because it depends on an
+  unofficial endpoint, it can break at any time and is not guaranteed to
+  work — every failure mode falls back to asking the user for an
+  exported file, which always works.
 
 ## Use
 
@@ -62,6 +76,17 @@ python3 scripts/extract_region.py <path-to-file.excalidraw> --color <hex>
 
 `--color` defaults to `#c1a4de` if omitted.
 
+For a live room link instead of a file:
+
+```bash
+scripts/fetch_room.sh "<excalidraw.com/#room=...,... url>" > room.excalidraw
+python3 scripts/extract_region.py room.excalidraw --color <hex>
+```
+
+If `fetch_room.sh` exits non-zero, it printed why to stderr — the correct
+response is to ask the user for an exported `.excalidraw` file, not to
+retry or work around it.
+
 ## Expected behavior
 
 - Only elements geometrically inside the matched rectangle(s) are ever
@@ -72,3 +97,6 @@ python3 scripts/extract_region.py <path-to-file.excalidraw> --color <hex>
 - The skill will ask questions rather than answer confidently when the
   JSON doesn't give it enough evidence — this is intentional, not a
   limitation to work around.
+- If `fetch_room.sh` fails, for any reason, the expected behavior is to
+  ask the user for an exported `.excalidraw` file and continue with
+  that — not to retry, not to attempt another decryption approach.

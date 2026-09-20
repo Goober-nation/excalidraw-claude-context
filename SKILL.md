@@ -1,6 +1,6 @@
 ---
 name: excalidraw-region
-description: Extract only the contents of a specific colored-rectangle region from an .excalidraw whiteboard file, without pulling the rest of the board into context. Use when the user shares an .excalidraw file (or export) and asks to read/discuss/focus on "just the [color] box", a specific section, or wants to avoid dumping the whole board into context — e.g. "pull the purple rectangle from this whiteboard", "what's in the parked-ideas box". Default region color is #c1a4de unless the user specifies another.
+description: Extract only the contents of a specific colored-rectangle region from an .excalidraw whiteboard, without pulling the rest of the board into context. Use when the user shares an .excalidraw file/export, or an excalidraw.com/#room=... live collab link, and asks to read/discuss/focus on "just the [color] box", a specific section, or wants to avoid dumping the whole board into context — e.g. "pull the purple rectangle from this whiteboard", "what's in the parked-ideas box". Default region color is #c1a4de unless the user specifies another.
 ---
 
 # Excalidraw region extraction
@@ -18,12 +18,44 @@ screenshot — do not open a browser or render anything yourself.
 
 ## Prerequisite
 
-You need a local path to an `.excalidraw` file (JSON export). If the user
-only has a live collab link, this skill doesn't apply — a collab room's
-scene data is end-to-end encrypted and only decryptable client-side in a
-real browser session (not fetchable, not readable from a JSON export).
-Ask the user to export via the board's menu → "Save to..." → File, and
-give you that path.
+You need a local path to an `.excalidraw` file (JSON export). Two ways to
+get one:
+
+1. **Preferred**: ask the user to export via the board's menu → "Save
+   to..." → File, and give you that path.
+2. **Best-effort, live room links only**: if the user gives you an
+   `excalidraw.com/#room=<id>,<key>` link instead of a file, you can try
+   `scripts/fetch_room.sh` (see below) to fetch and decrypt it yourself.
+   This is unofficial and fragile — see its own section for the mandatory
+   fallback rule.
+
+## Live room links (best-effort, via fetch_room.sh)
+
+`scripts/fetch_room.sh` fetches a live collab room's current scene from
+Excalidraw's own storage backend and decrypts it locally with the key
+from the URL fragment (the key never leaves this machine — it's only
+used for local decryption, never sent anywhere). It requires `node` (uses
+only the built-in `crypto` module — no `npm install`, no packages). This
+is reverse-engineered from observed network traffic, not a documented
+API, so it can break at any time.
+
+```bash
+python3 <this-skill's-directory>/scripts/fetch_room.sh "<room-url>" > /tmp/room.excalidraw
+```
+
+On success this prints a standard `.excalidraw`-format file to stdout,
+directly usable as input to `extract_region.py`.
+
+**Mandatory rule: if this script exits non-zero, for any reason, do not
+retry it, do not attempt an alternate decryption method (no pip installs,
+no venvs, no other workaround), and do not try the same link again.**
+Immediately tell the user it didn't work and ask them to export and send
+the `.excalidraw` file instead (the Preferred path above). The script's
+stderr message already says this — relay it, don't debug around it. This
+applies equally to: `node` missing, a malformed/non-room URL, a network
+or HTTP failure, a room with no cloud-persisted scene (never opened by a
+second collaborator, or history cleared), or a decrypt/auth failure (key
+mismatch, or Excalidraw having changed their storage format).
 
 ## Running the analysis
 
@@ -95,8 +127,10 @@ these steps, and do not print the final summary early.
 ## Notes
 
 - Deleted elements (`isDeleted: true`) are always ignored.
-- This only reads a file already on disk — it does not fetch live collab
-  rooms (see Prerequisite above).
+- `extract_region.py` itself only ever reads a file already on disk.
+  Fetching a live collab room is a separate, best-effort step
+  (`fetch_room.sh`, see above) that produces such a file — it is not
+  something `extract_region.py` does on its own.
 - There is deliberately no rendering/screenshot capability in this
   skill. If a future need for visual rendering comes up, that is a
   separate decision to make explicitly with the user, not something to

@@ -1,5 +1,5 @@
 ---
-name: excalidraw-region
+name: excalidraw-claude-context
 description: Extract only the contents of a specific colored-rectangle region from an .excalidraw whiteboard, without pulling the rest of the board into context. Use when the user shares an .excalidraw file/export, or an excalidraw.com/#room=... live collab link, and asks to read/discuss/focus on "just the [color] box", a specific section, or wants to avoid dumping the whole board into context — e.g. "pull the purple rectangle from this whiteboard", "what's in the parked-ideas box". Default region color is #c1a4de unless the user specifies another.
 ---
 
@@ -64,8 +64,8 @@ python3 <this-skill's-directory>/scripts/extract_region.py <path-to-file> --colo
 ```
 
 `<this-skill's-directory>` is wherever this `SKILL.md` actually lives (e.g.
-`~/.claude/skills/excalidraw-region`, or a project's
-`.claude/skills/excalidraw-region` if installed there instead) — resolve
+`~/.claude/skills/excalidraw-claude-context`, or a project's
+`.claude/skills/excalidraw-claude-context` if installed there instead) — resolve
 it relative to this file's own location, not a hardcoded path, so the
 skill keeps working if it's moved, renamed, or cloned somewhere else.
 

@@ -1,4 +1,4 @@
-# excalidraw-region
+# excalidraw-claude-context
 ## TL;DR
 
 1. **In Excalidraw**, draw a rectangle around the area you want and
@@ -20,8 +20,8 @@
 ## Use
 
 Place this directory under a Claude Code skills path (e.g.
-`~/.claude/skills/excalidraw-region` for personal use, or a project's
-`.claude/skills/excalidraw-region`). Claude Code picks it up automatically.
+`~/.claude/skills/excalidraw-claude-context` for personal use, or a project's
+`.claude/skills/excalidraw-claude-context`). Claude Code picks it up automatically.
 
 ## Expected behavior
 

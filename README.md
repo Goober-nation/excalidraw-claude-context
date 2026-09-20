@@ -4,6 +4,11 @@ A Claude Code skill that extracts the contents of one colored-rectangle
 region from a large `.excalidraw` board, without loading the rest of the
 board into the model's context.
 
+**TL;DR:** highlight the section you want with a rectangle colored
+**`#c1a4de`** (the default the script looks for — pass `--color <hex>` to
+use a different one), export the board to a local `.excalidraw` file, and
+run `scripts/extract_region.py` on it.
+
 ## Workflow
 
 1. **Run the analysis script** (`scripts/extract_region.py`) against a

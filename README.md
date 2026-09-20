@@ -5,23 +5,20 @@ the whole thing.
 
 ## TL;DR
 
-Draw a rectangle around the area you want, colored **`#c1a4de`**
-(`--color <hex>` for a different one). Then:
+This is a Claude Code skill — you don't run anything yourself.
 
-```bash
-# from a file
-python3 scripts/extract_region.py board.excalidraw
-
-# from a live link
-scripts/fetch_room.sh "<excalidraw.com/#room=...,... url>" > board.excalidraw
-python3 scripts/extract_region.py board.excalidraw
-```
-
-You get back: the shapes and text inside that rectangle, the arrows
-between them (arrows leaving the rectangle are marked external, not
-dropped), and best-guess labels for anything unlabeled — each guess
-flagged as inference, with unresolved ones called out as questions
-instead of asserted.
+1. **In Excalidraw**, draw a rectangle around the area you want and
+   color it **`#c1a4de`** (say a different color to Claude if you'd
+   rather use one — it's just the default).
+2. **Give Claude either** a local `.excalidraw` export of the board, or
+   the `excalidraw.com/#room=...` link, and ask about that section —
+   e.g. "what's in the purple box on this board?"
+3. **Claude runs the skill** and replies with: the shapes and text
+   inside that rectangle, the arrows between them (ones leaving the
+   rectangle are marked external, not dropped), and best-guess labels
+   for anything unlabeled, flagged as inference rather than stated as
+   fact. If anything's genuinely unclear, Claude asks you before
+   answering instead of guessing.
 
 ## Required order
 
